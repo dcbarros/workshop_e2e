@@ -1,5 +1,6 @@
 export type ClientType = 'Pessoa física' | 'Pessoa jurídica'
 export type PreferredContact = 'Telefone' | 'E-mail' | 'WhatsApp'
+export type ClientInterest = 'Vestuário' | 'Maquiagem' | 'Ferramentas' | 'Utensílios de cozinha' | 'Decoração' | 'Itens colecionáveis' | 'Papelaria' | 'Materiais de escritório' | 'Eletrônicos'
 
 export interface Address {
   cep: string
