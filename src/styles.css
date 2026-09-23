@@ -81,9 +81,6 @@ table { width: 100%; border-collapse: collapse; font-size: 13px; }th { backgroun
 .radio-card { display: inline-flex; align-items: center; gap: 7px; padding: 8px 11px; border: 1px solid #dfe5ee; border-radius: 9px; background: #fbfcfd; font-size: 11px; color: #455168; }
 .radio-card input { accent-color: var(--blue); }
 
-/* Defeito intencional de requisito/produção: ações previstas existem no DOM, mas não aparecem na UI. */
-.requirement-hidden-action { display: none !important; }
-
 select, textarea { font: inherit; }
 .select-control { appearance: auto; }
 .lab-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }

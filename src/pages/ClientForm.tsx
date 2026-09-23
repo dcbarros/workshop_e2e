@@ -6,6 +6,7 @@ import { Field } from '../components/Field'
 import { digitsOnly, formatCpf } from '../utils/formatters'
 import { ageFromDate, isFullName, isValidCpf, isValidEmail, parseBirthDate } from '../utils/validators'
 import { downloadClientPdf } from '../utils/pdf'
+import { WORKSHOP_FEATURES } from '../config/workshopFeatures'
 
 interface ClientFormProps {
   cpf?: string
@@ -195,9 +196,9 @@ export function ClientForm({ cpf, navigate }: ClientFormProps) {
       <header className="page-header page-header--sticky">
         <div><span className="eyebrow">Clientes / {isEditing ? 'Editar' : 'Novo'}</span><h1>{isEditing ? 'Editar cliente' : 'Cadastro de cliente'}</h1><p>Preencha os dado do cliente e salve o registro localmente.</p></div>
         <div className="header-actions">
-          {isEditing ? <button className="button button--secondary" type="button" onClick={() => downloadClientPdf(client)} data-cy="download-client">↓ Baixar PDF</button> : null}
-          <button className="button button--ghost requirement-hidden-action" type="button" onClick={() => navigate('/clientes')} data-cy="cancel-client">Cancelar</button>
-          <button className="button button--primary requirement-hidden-action" type="submit" form="client-form" disabled={saving} data-cy="save-client">{saving ? 'Salvando…' : 'Salvar cadastro'}</button>
+          <button className="button button--secondary" type="button" onClick={() => downloadClientPdf(client)} data-cy="download-client">↓ Baixar PDF</button>
+          {WORKSHOP_FEATURES.clientForm.showCancelButton ? <button className="button button--ghost" type="button" onClick={() => navigate('/clientes')} data-cy="cancel-client">Cancelar</button> : null}
+          {WORKSHOP_FEATURES.clientForm.showSaveButton ? <button className="button button--primary" type="submit" form="client-form" disabled={saving} data-cy="save-client">{saving ? 'Salvando…' : 'Salvar cadastro'}</button> : null}
         </div>
       </header>
       {notice ? <div className="toast" role="status">{notice}</div> : null}
@@ -216,7 +217,7 @@ export function ClientForm({ cpf, navigate }: ClientFormProps) {
               <Field label="Nome completo" required value={client.name} onChange={(e) => set('name', e.target.value)} error={errors.name} placeholder="Nome completo" maxLength={100} id="client-name" data-cy="client-name" className="span-2" />
               <Field label="Data de nascimento" value={client.birthDate} onChange={(e) => set('birthDate', e.target.value)} error={errors.birthDate} placeholder="DD/MM/AAAA" inputMode="numeric" maxLength={10} id="birth-date" />
               <Field label="Telefone" value={client.phone} onChange={(e) => set('phone', e.target.value)} error={errors.phone} placeholder="Contato do cliente" maxLength={49} id="phone" />
-              <Field label="E-mail" value={client.email} onChange={(e) => set('email', e.target.value)} warning={emailWarning} placeholder="seuemail@email.com" id="email" data-cy="client-email" />
+              {WORKSHOP_FEATURES.clientForm.showEmailField ? <Field label="E-mail" value={client.email} onChange={(e) => set('email', e.target.value)} warning={emailWarning} placeholder="seuemail@email.com" id="email" data-cy="client-email" /> : null}
               <Field label="CPF" required value={formatCpf(client.cpf)} onChange={(e) => set('cpf', digitsOnly(e.target.value).slice(0, 11))} error={errors.cpf} placeholder="000.000.000-00" inputMode="numeric" maxLength={14} id="cpf" data-cy="client-cpf" disabled={isEditing} />
               <Field label="RG" value={client.rg} onChange={(e) => set('rg', e.target.value)} error={errors.rg} placeholder="RG" maxLength={49} id="rg" />
             </div>
