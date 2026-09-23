@@ -1150,14 +1150,49 @@ textarea {
   gap: 8px;
 }
 .file-card {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 8px 18px;
+  display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+
   border: 1px dashed #ccd5e2;
   border-radius: 10px;
   background: #fafbfc;
-  padding: 14px;
+  padding: 16px;
+}
+
+.file-card__info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.file-card__info span strong,
+.file-card__info span small {
+  display: block;
+}
+
+.file-card__info span strong {
+  font-size: 12px;
+  color: #3d4b61;
+}
+
+.file-card__info span small {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.file-card__info em {
+  color: #707b8d;
+  font-size: 10px;
+  font-style: normal;
+}
+
+.file-card__actions {
+  flex: 0 0 auto;
 }
 .file-card span strong,
 .file-card span small {
