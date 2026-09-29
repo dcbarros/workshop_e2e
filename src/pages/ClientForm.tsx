@@ -310,7 +310,7 @@ export function ClientForm({ cpf, navigate }: ClientFormProps) {
             onClick={() => downloadClientPdf(client)}
             data-cy="download-client"
           >
-            ↓ Baixar PDF
+            ↓ Baixar
           </button>
           {WORKSHOP_FEATURES.clientForm.showCancelButton ? (
             <button
@@ -349,7 +349,7 @@ export function ClientForm({ cpf, navigate }: ClientFormProps) {
               <p style={{ display: "none" }}>Informações básica de identificação do cliente.</p>
             </div>
           </div>
-          <div className="personal-grid">
+          <div  className="personal-grid">
             <div className="photo-column">
               <button
                 type="button"
@@ -367,10 +367,10 @@ export function ClientForm({ cpf, navigate }: ClientFormProps) {
                   <img src={client.photoDataUrl} alt="Foto do cliente" />
                 ) : (
                   <>
-                    <span className="photo-icon">◎</span>
-                    <strong>Carregar foto</strong>
-                    <small>Clique ou arraste o arquivo</small>
-                    <em>JPEG/JPG • até 2 MB</em>
+                    <span className="photo-icon">📷</span>
+                      <strong style={{ borderRight: "5px solid #ccc", paddingRight: "2px" }}>Carregar foto</strong>
+                  {/*   <small>Clique ou arraste o arquivo</small>
+                     <em>JPEG/JPG • até 2 MB</em> */}
                   </>
                 )}
               </button>
@@ -434,7 +434,7 @@ export function ClientForm({ cpf, navigate }: ClientFormProps) {
               ) : null}
               <Field
                 label="CPF"
-                required
+                // required
                 value={formatCpf(client.cpf)}
                 onChange={(e) =>
                   set("cpf", digitsOnly(e.target.value).slice(0, 11))
@@ -449,6 +449,7 @@ export function ClientForm({ cpf, navigate }: ClientFormProps) {
               />
               <Field
                 label="RG"
+                className="rg-field"
                 value={client.rg}
                 onChange={(e) => set("rg", e.target.value)}
                 error={errors.rg}
@@ -493,7 +494,7 @@ export function ClientForm({ cpf, navigate }: ClientFormProps) {
               id="street"
             />
             <Field
-              label="Número"
+              label="Numero"
               value={client.address.number}
               onChange={(e) => setAddress("number", e.target.value)}
               placeholder="0000"

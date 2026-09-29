@@ -46,6 +46,11 @@ code {
   border-radius: 5px;
   padding: 2px 5px;
 }
+
+.rg-field .field__label {
+  color: var(--muted) !important;
+}
+
 .visually-hidden {
   position: absolute !important;
   width: 1px;

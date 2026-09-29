@@ -11,7 +11,6 @@ export function Layout({ children, route, navigate }: LayoutProps) {
   const navItems = [
     { path: '/dashboard', label: 'Dashboard', icon: '▦' },
     { path: '/clientes', label: 'Clientes', icon: '◉' },
-    { path: '/clientes/novo', label: 'Novo cadastro', icon: '+' },
     { path: '/atendimentos', label: 'Atendimentos', icon: '▤' }
   ]
 
