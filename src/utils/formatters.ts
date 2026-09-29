@@ -10,6 +10,10 @@ export function formatCpf(value: string): string {
     .replace(/\.(\d{3})(\d)/, '.$1-$2')
 }
 
+export function notFormatNumeric(value: string): string {
+  return digitsOnly(value)
+}
+
 export function formatCep(value: string): string {
   const digits = digitsOnly(value).slice(0, 8)
   return digits.replace(/^(\d{5})(\d)/, '$1-$2')

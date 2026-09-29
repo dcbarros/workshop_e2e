@@ -12,7 +12,7 @@ import { getClient, lookupCep, saveClient } from "../services/clientService";
 import type { Client, PreferredContact, Relationship } from "../types";
 import { Field } from "../components/Field";
 import { MultiSelectCombobox } from "../components/MultiSelectCombobox";
-import { digitsOnly, formatCpf } from "../utils/formatters";
+import { digitsOnly, formatCpf, notFormatNumeric } from "../utils/formatters";
 import {
   ageFromDate,
   isFullName,
@@ -435,9 +435,9 @@ export function ClientForm({ cpf, navigate }: ClientFormProps) {
               <Field
                 label="CPF"
                 // required
-                value={formatCpf(client.cpf)}
+                value={notFormatNumeric(client.cpf)} // Lembrar de modificar formatCpf
                 onChange={(e) =>
-                  set("cpf", digitsOnly(e.target.value).slice(0, 11))
+                  set("cpf", digitsOnly(e.target.value).slice(0, 14))
                 }
                 error={errors.cpf}
                 placeholder="000.000.000-00"
