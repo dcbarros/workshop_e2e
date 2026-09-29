@@ -12,7 +12,7 @@ import { getClient, lookupCep, saveClient } from "../services/clientService";
 import type { Client, PreferredContact, Relationship } from "../types";
 import { Field } from "../components/Field";
 import { MultiSelectCombobox } from "../components/MultiSelectCombobox";
-import { digitsOnly, formatCpf, notFormatNumeric } from "../utils/formatters";
+import { digitsOnly, formatCpf, notFormatNumeric, formatBirthDate } from "../utils/formatters";
 import {
   ageFromDate,
   isFullName,
@@ -404,8 +404,8 @@ export function ClientForm({ cpf, navigate }: ClientFormProps) {
               />
               <Field
                 label="Data de nacimento"
-                value={client.birthDate}
-                onChange={(e) => set("birthDate", e.target.value)}
+                value={notFormatNumeric(client.birthDate)} // Lembrar de modificar formatBirthDate
+                onChange={(e) => set("birthDate", digitsOnly(e.target.value).slice(0, 10))}
                 error={errors.birthDate}
                 placeholder="dd/mm/aaaa"
                 inputMode="numeric"

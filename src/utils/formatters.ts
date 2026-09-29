@@ -22,3 +22,8 @@ export function formatCep(value: string): string {
 export function shortDate(iso: string): string {
   return new Intl.DateTimeFormat('pt-BR').format(new Date(iso))
 }
+
+export function formatBirthDate(value: string): string {
+  const digits = digitsOnly(value).slice(0, 8)
+  return digits.replace(/^(\d{2})(\d{2})(\d{4})$/, '$1/$2/$3')
+}
