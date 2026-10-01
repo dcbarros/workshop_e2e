@@ -12,7 +12,7 @@ import { getClient, lookupCep, saveClient } from "../services/clientService";
 import type { Client, PreferredContact, Relationship } from "../types";
 import { Field } from "../components/Field";
 import { MultiSelectCombobox } from "../components/MultiSelectCombobox";
-import { digitsOnly, formatCpf, notFormatNumeric, formatBirthDate } from "../utils/formatters";
+import { digitsOnly, formatCpf, notFormatNumeric, formatBirthDate, formatTelephone, formatRg, formatCep, formatCnpj } from "../utils/formatters";
 import {
   ageFromDate,
   isFullName,
@@ -22,6 +22,8 @@ import {
 } from "../utils/validators";
 import { downloadClientPdf } from "../utils/pdf";
 import { WORKSHOP_FEATURES } from "../config/workshopFeatures";
+import { WORKSHOP_FEATURES_BUGS } from "../config/workshopBugsPainel";
+import { SelectField } from "../components/SelectField";
 
 interface ClientFormProps {
   cpf?: string;
@@ -230,8 +232,8 @@ export function ClientForm({ cpf, navigate }: ClientFormProps) {
       ...current,
       relationships: editingRelationshipId
         ? current.relationships.map((item) =>
-            item.id === editingRelationshipId ? relationship : item,
-          )
+          item.id === editingRelationshipId ? relationship : item,
+        )
         : [...current.relationships, relationship],
     }));
     closeRelationshipModal();
@@ -312,7 +314,7 @@ export function ClientForm({ cpf, navigate }: ClientFormProps) {
           >
             ↓ Baixar
           </button>
-          {WORKSHOP_FEATURES.clientForm.showCancelButton ? (
+          {WORKSHOP_FEATURES_BUGS.clientForm.cancelButtonBugs ? null : (
             <button
               className="button button--ghost"
               type="button"
@@ -321,8 +323,8 @@ export function ClientForm({ cpf, navigate }: ClientFormProps) {
             >
               Cancelar
             </button>
-          ) : null}
-          {WORKSHOP_FEATURES.clientForm.showSaveButton ? (
+          )}
+          {WORKSHOP_FEATURES_BUGS.clientForm.saveButtonBugs ? null : (
             <button
               className="button button--primary"
               type="submit"
@@ -332,7 +334,7 @@ export function ClientForm({ cpf, navigate }: ClientFormProps) {
             >
               {saving ? "Salvando…" : "Salvar cadastro"}
             </button>
-          ) : null}
+          )}
         </div>
       </header>
       {notice ? (
@@ -346,10 +348,9 @@ export function ClientForm({ cpf, navigate }: ClientFormProps) {
             <div>
               <span className="section-index">01</span>
               <h2>Dados pessoais</h2>
-              <p style={{ display: "none" }}>Informações básica de identificação do cliente.</p>
             </div>
           </div>
-          <div  className="personal-grid">
+          <div className="personal-grid">
             <div className="photo-column">
               <button
                 type="button"
@@ -368,9 +369,13 @@ export function ClientForm({ cpf, navigate }: ClientFormProps) {
                 ) : (
                   <>
                     <span className="photo-icon">📷</span>
-                      <strong style={{ borderRight: "5px solid #ccc", paddingRight: "2px" }}>Carregar foto</strong>
-                  {/*   <small>Clique ou arraste o arquivo</small>
-                     <em>JPEG/JPG • até 2 MB</em> */}
+                    <strong style={WORKSHOP_FEATURES_BUGS.clientForm.pictureBugs ? { borderRight: "5px solid #ccc", paddingRight: "2px" } : {}}>Carregar foto</strong>
+                    {WORKSHOP_FEATURES_BUGS.clientForm.pictureBugs ?
+                      "" :
+                      <>
+                        <small>Clique ou arraste o arquivo</small>
+                        <em>JPEG/JPG • até 2 MB</em>
+                      </>}
                   </>
                 )}
               </button>
@@ -403,25 +408,25 @@ export function ClientForm({ cpf, navigate }: ClientFormProps) {
                 className="span-2"
               />
               <Field
-                label="Data de nacimento"
-                value={notFormatNumeric(client.birthDate)} // Lembrar de modificar formatBirthDate
+                label={WORKSHOP_FEATURES_BUGS.clientForm.birthdayInputBugs ? "Data de nacimento" : "Data de nascimento"}
+                value={WORKSHOP_FEATURES_BUGS.clientForm.birthdayInputBugs ? notFormatNumeric(client.birthDate) : formatBirthDate(client.birthDate)} // Lembrar de modificar formatBirthDate
                 onChange={(e) => set("birthDate", digitsOnly(e.target.value).slice(0, 10))}
                 error={errors.birthDate}
                 placeholder="dd/mm/aaaa"
                 inputMode="numeric"
-                maxLength={10}
+                maxLength={WORKSHOP_FEATURES_BUGS.clientForm.birthdayInputBugs ? 10 : 8}
                 id="birth-date"
               />
               <Field
                 label="Telefone"
-                value={client.phone}
-                onChange={(e) => set("phone", e.target.value)}
+                value={WORKSHOP_FEATURES_BUGS.clientForm.telephoneInputBugs ? client.phone : formatTelephone(client.phone)}
+                onChange={(e) => set("phone", WORKSHOP_FEATURES_BUGS.clientForm.telephoneInputBugs ? e.target.value : digitsOnly(e.target.value).slice(0, 11))}
                 error={errors.phone}
                 placeholder="(00) 00000-0000"
-                maxLength={49}
+                maxLength={WORKSHOP_FEATURES_BUGS.clientForm.telephoneInputBugs ? 49 : 14}
                 id="phone"
               />
-              {WORKSHOP_FEATURES.clientForm.showEmailField ? (
+              {WORKSHOP_FEATURES_BUGS.clientForm.emailFieldBugs ? null : (
                 <Field
                   label="E-mail"
                   value={client.email}
@@ -431,32 +436,57 @@ export function ClientForm({ cpf, navigate }: ClientFormProps) {
                   id="email"
                   data-cy="client-email"
                 />
-              ) : null}
-              <Field
-                label="CPF"
-                // required
-                value={notFormatNumeric(client.cpf)} // Lembrar de modificar formatCpf
-                onChange={(e) =>
-                  set("cpf", digitsOnly(e.target.value).slice(0, 14))
-                }
-                error={errors.cpf}
-                placeholder="000.000.000-00"
-                inputMode="numeric"
-                maxLength={14}
-                id="cpf"
-                data-cy="client-cpf"
-                disabled={isEditing}
-              />
-              <Field
-                label="RG"
-                className="rg-field"
-                value={client.rg}
-                onChange={(e) => set("rg", e.target.value)}
-                error={errors.rg}
-                placeholder="00.000.000-0"
-                maxLength={49}
-                id="rg"
-              />
+              )}
+
+              {(client.clientTypes.length === 1 && client.clientTypes[0] === "Pessoa jurídica" && !WORKSHOP_FEATURES_BUGS.clientForm.clientTypesFieldBugs) ? (
+                <>
+                  <Field
+                    label="CNPJ"
+                    required
+                    value={formatCnpj(client.cpf)}
+                    onChange={(e) =>
+                      set("cpf", WORKSHOP_FEATURES_BUGS.clientForm.cpfFieldBugs ? e.target.value : digitsOnly(e.target.value).slice(0, 14))
+                    }
+                    error={errors.cpf}
+                    placeholder="00.000.000/0000-00"
+                    inputMode="numeric"
+                    maxLength={18}
+                    id="cpf"
+                    data-cy="client-cnpj"
+                    disabled={isEditing}
+                  />
+                </>
+              ) : (
+                <>
+                  <Field
+                    label="CPF"
+                    required={!WORKSHOP_FEATURES_BUGS.clientForm.cpfFieldBugs}
+                    value={WORKSHOP_FEATURES_BUGS.clientForm.cpfFieldBugs ? notFormatNumeric(client.cpf) : formatCpf(client.cpf)} // Lembrar de modificar formatCpf
+                    onChange={(e) =>
+                      set("cpf", WORKSHOP_FEATURES_BUGS.clientForm.cpfFieldBugs ? e.target.value : digitsOnly(e.target.value).slice(0, 14))
+                    }
+                    error={errors.cpf}
+                    placeholder="000.000.000-00"
+                    inputMode="numeric"
+                    maxLength={14}
+                    id="cpf"
+                    data-cy="client-cpf"
+                    disabled={isEditing}
+                  />
+                  <Field
+                    label="RG"
+                    className={WORKSHOP_FEATURES_BUGS.clientForm.rgFieldBugs ? "rg-doc-field" : "rg-field"}
+                    value={WORKSHOP_FEATURES_BUGS.clientForm.rgFieldBugs ? client.rg : formatRg(client.rg)}
+                    onChange={(e) => WORKSHOP_FEATURES_BUGS.clientForm.rgFieldBugs ? set("rg", e.target.value) : set("rg", digitsOnly(e.target.value).slice(0, 9))}
+                    error={errors.rg}
+                    placeholder="00.000.000-0"
+                    maxLength={WORKSHOP_FEATURES_BUGS.clientForm.rgFieldBugs ? 49 : 12}
+                    id="rg"
+                  />
+                </>
+              )}
+
+
             </div>
           </div>
         </section>
@@ -466,21 +496,18 @@ export function ClientForm({ cpf, navigate }: ClientFormProps) {
             <div>
               <span className="section-index">02</span>
               <h2>Endereço</h2>
-              <p style={{ display: "none" }}>
-                Informe o CEP para buscar o endereço. Os campos preenchido
-                automaticamente continuam editáveis.
-              </p>
             </div>
           </div>
+          {/* Vou tratar como uma regra mais a frente apenas códigos postais Brasileiros */}
           <div className="form-grid form-grid--4">
             <Field
               label="CEP"
-              value={client.address.cep}
-              onChange={(e) => setAddress("cep", e.target.value)}
+              value={WORKSHOP_FEATURES_BUGS.clientForm.cepFieldBugs ? client.address.cep : formatCep(client.address.cep)}
+              onChange={(e) => setAddress("cep", WORKSHOP_FEATURES_BUGS.clientForm.cepFieldBugs ? e.target.value : digitsOnly(e.target.value).slice(0, 8))}
               onBlur={() => void handleCepBlur()}
               error={errors.cep}
-              placeholder=""
-              maxLength={19}
+              placeholder={WORKSHOP_FEATURES_BUGS.clientForm.cepFieldBugs ? "" : "00000-000"}
+              maxLength={WORKSHOP_FEATURES_BUGS.clientForm.cepFieldBugs ? 49 : 9}
               id="cep"
               data-cy="client-cep"
             />
@@ -494,10 +521,10 @@ export function ClientForm({ cpf, navigate }: ClientFormProps) {
               id="street"
             />
             <Field
-              label="Numero"
+              label={WORKSHOP_FEATURES_BUGS.clientForm.houseNumberFieldBugs ? "Numero" : "Número"}
               value={client.address.number}
               onChange={(e) => setAddress("number", e.target.value)}
-              placeholder="0000"
+              placeholder={WORKSHOP_FEATURES_BUGS.clientForm.houseNumberFieldBugs ? "0000" : "Número"}
               maxLength={50}
               id="number"
             />
@@ -521,17 +548,17 @@ export function ClientForm({ cpf, navigate }: ClientFormProps) {
               label="Cidade"
               value={client.address.city}
               onChange={(e) => setAddress("city", e.target.value)}
-              placeholder="                Cidade"
+              placeholder={WORKSHOP_FEATURES_BUGS.clientForm.cityFieldBugs ? "                Cidade" : "Cidade"}
               maxLength={50}
               id="city"
               data-cy="client-city"
             />
             <Field
               label="Estado"
-              value={client.address.state}
+              value={client.address.state.toUpperCase()}
               onChange={(e) => setAddress("state", e.target.value)}
               placeholder="UF"
-              maxLength={20}
+              maxLength={WORKSHOP_FEATURES_BUGS.clientForm.stateFieldBugs ? 49 : 2}
               id="state"
             />
             <Field
@@ -556,20 +583,38 @@ export function ClientForm({ cpf, navigate }: ClientFormProps) {
             </div>
           </div>
           <div className="form-grid form-grid--2">
-            <MultiSelectCombobox
-              label="Tipo de cliente"
-              required
-              options={["Pessoa física", "Pessoa jurídica"] as const}
-              values={client.clientTypes}
-              onChange={(values) => {
-                setClient((current) => ({ ...current, clientTypes: values }));
-                setErrors((current) => ({ ...current, clientTypes: "" }));
-              }}
-              placeholder="Selecione o tipo de cliente"
-              tooltip="Selecione um ou mais tipo de clientes"
-              error={errors.clientTypes}
-              dataCy="client-type"
-            />
+            {
+              WORKSHOP_FEATURES_BUGS.clientForm.clientTypesFieldBugs ? (
+                <MultiSelectCombobox
+                  label="Tipo de cliente"
+                  required
+                  options={["Pessoa física", "Pessoa jurídica"] as const}
+                  values={client.clientTypes}
+                  onChange={(values) => {
+                    setClient((current) => ({ ...current, clientTypes: values }));
+                    setErrors((current) => ({ ...current, clientTypes: "" }));
+                  }}
+                  placeholder="Selecione o tipo de cliente"
+                  tooltip="Selecione um ou mais tipo de clientes"
+                  error={errors.clientTypes}
+                  dataCy="client-type"
+                />
+              ) : (
+                <SelectField
+                  label="Tipo de cliente"
+                  options={["Pessoa física", "Pessoa jurídica"] as const}
+                  value={client.clientTypes[0] || ""}
+                  onChange={(value) => {
+                    setClient((current) => ({ ...current, clientTypes: [value] }));
+                    setErrors((current) => ({ ...current, clientTypes: "" }));
+                  }}
+                  placeholder="Selecione o tipo de cliente"
+                  tooltip="Selecione um tipo de cliente"
+                  error={errors.clientTypes}
+                  dataCy="client-type"
+                />
+              )
+            }
 
             <MultiSelectCombobox
               label="Interesses"

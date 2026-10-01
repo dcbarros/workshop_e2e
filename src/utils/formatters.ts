@@ -1,29 +1,57 @@
 export function digitsOnly(value: string): string {
-  return value.replace(/\D/g, '')
+  return value.replace(/\D/g, "");
 }
 
 export function formatCpf(value: string): string {
-  const digits = digitsOnly(value).slice(0, 11)
+  const digits = digitsOnly(value).slice(0, 11);
   return digits
-    .replace(/^(\d{3})(\d)/, '$1.$2')
-    .replace(/^(\d{3})\.(\d{3})(\d)/, '$1.$2.$3')
-    .replace(/\.(\d{3})(\d)/, '.$1-$2')
+    .replace(/^(\d{3})(\d)/, "$1.$2")
+    .replace(/^(\d{3})\.(\d{3})(\d)/, "$1.$2.$3")
+    .replace(/\.(\d{3})(\d)/, ".$1-$2");
+}
+
+export function formatRg(value: string): string {
+
+  if (value.length === 8) {
+    const digits = digitsOnly(value).slice(0, 8);
+    return digits.replace(/^(\d{2})(\d{3})(\d{3})$/, "$1.$2-$3");
+  } else if (value.length === 9) {
+    const digits = digitsOnly(value).slice(0, 9);
+    return digits.replace(/^(\d{2})(\d{3})(\d{3})(\d)$/, "$1.$2.$3-$4");
+  } 
+  return digitsOnly(value);
 }
 
 export function notFormatNumeric(value: string): string {
-  return digitsOnly(value)
+  return digitsOnly(value);
 }
 
 export function formatCep(value: string): string {
-  const digits = digitsOnly(value).slice(0, 8)
-  return digits.replace(/^(\d{5})(\d)/, '$1-$2')
+  const digits = digitsOnly(value).slice(0, 8);
+  return digits.replace(/^(\d{5})(\d)/, "$1-$2");
 }
 
 export function shortDate(iso: string): string {
-  return new Intl.DateTimeFormat('pt-BR').format(new Date(iso))
+  return new Intl.DateTimeFormat("pt-BR").format(new Date(iso));
 }
 
 export function formatBirthDate(value: string): string {
-  const digits = digitsOnly(value).slice(0, 8)
-  return digits.replace(/^(\d{2})(\d{2})(\d{4})$/, '$1/$2/$3')
+  const digits = digitsOnly(value).slice(0, 8);
+  return digits.replace(/^(\d{2})(\d{2})(\d{4})$/, "$1/$2/$3");
+}
+
+export function formatTelephone(value: string): string {
+  const digits = digitsOnly(value).slice(0, 11);
+  return digits
+    .replace(/^(\d{2})(\d)/, "($1) $2")
+    .replace(/(\d{5})(\d{4})$/, "$1-$2");
+}
+
+export function formatCnpj(value: string): string {
+  const digits = digitsOnly(value).slice(0, 14);
+  return digits
+    .replace(/^(\d{2})(\d)/, "$1.$2")
+    .replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3")
+    .replace(/\.(\d{3})(\d)/, ".$1/$2")
+    .replace(/(\d{4})(\d)/, "$1-$2");
 }
