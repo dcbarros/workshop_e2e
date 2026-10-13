@@ -21,7 +21,6 @@ import {
   parseBirthDate,
 } from "../utils/validators";
 import { downloadClientPdf } from "../utils/pdf";
-import { WORKSHOP_FEATURES } from "../config/workshopFeatures";
 import { WORKSHOP_FEATURES_BUGS } from "../config/workshopBugsPainel";
 import { SelectField } from "../components/SelectField";
 
@@ -203,7 +202,7 @@ export function ClientForm({ cpf, navigate }: ClientFormProps) {
     if (!relationshipDraft.name.trim()) next.name = "Campo Nome é obrigatório!";
     else if (!isFullName(relationshipDraft.name)) next.name = "Nome inválido!";
     if (!relationshipDraft.contact.trim())
-      next.contact = "Campo Nome é obrigatório!";
+      next.contact = WORKSHOP_FEATURES_BUGS.clientForm.errorContactRelationshipBugs ? "Campo Nome é obrigatório!" : "Campo Contato é obrigatório!";
     setRelationshipErrors(next);
     return Object.keys(next).length === 0;
   }

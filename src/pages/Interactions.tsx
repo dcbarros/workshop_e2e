@@ -21,6 +21,7 @@ import type {
   InteractionPriority,
   InteractionStatus,
 } from "../types";
+import { WORKSHOP_FEATURES_BUGS } from "../config/workshopBugsPainel";
 
 const categories: InteractionCategory[] = [
   "Cadastro",
@@ -137,6 +138,7 @@ export function Interactions() {
 
     setSaving(true);
     try {
+      
       await createInteraction({
         clientCpf,
         clientName: selectedClient.name,
@@ -153,6 +155,14 @@ export function Interactions() {
             }
           : undefined,
       });
+      
+      if (WORKSHOP_FEATURES_BUGS.clientForm.addingTimeToAddingInteractions) {
+
+        const simulatedDelay = Math.floor(Math.random() * 4000) + 2000;  
+
+        await delay(simulatedDelay);
+      }
+
       resetForm();
       setNotice("Interação adicionada à fila.");
       await load();
@@ -603,3 +613,10 @@ export function Interactions() {
     </div>
   );
 }
+
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    window.setTimeout(resolve, ms)
+  })
+}
+
