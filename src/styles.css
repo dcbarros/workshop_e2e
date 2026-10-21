@@ -732,17 +732,6 @@ td small {
   background: #fbfcfd;
   font-size: 11px;
 }
-.relationship-editor {
-  display: grid;
-  grid-template-columns: 1.4fr 1fr 1.2fr auto;
-  gap: 10px;
-  align-items: end;
-  padding: 14px;
-  background: #f8f9fb;
-  border: 1px solid #e7ebf1;
-  border-radius: 10px;
-  margin-bottom: 15px;
-}
 .empty-inline {
   padding: 24px;
   text-align: center;
@@ -971,9 +960,6 @@ td small {
   .choice-layout {
     grid-template-columns: 1fr;
   }
-  .relationship-editor {
-    grid-template-columns: 1fr 1fr;
-  }
   .login-hero {
     padding: 45px;
   }
@@ -1058,7 +1044,6 @@ td small {
 @media (max-width: 560px) {
   .form-grid--2,
   .form-grid--4,
-  .relationship-editor,
   .choice-row {
     grid-template-columns: 1fr;
   }
@@ -1432,7 +1417,12 @@ textarea {
   transform: translateY(0);
 }
 
-/* Relacionamentos: inclusão e edição em modal */
+/* Os números de seção permanecem nas outras telas; apenas o cadastro não os exibe. */
+.client-form-page .section-heading > div:first-child {
+  display: block;
+}
+
+/* Edição e inclusão de relacionamentos diretamente nas células da tabela. */
 .relationship-heading-actions {
   display: flex;
   align-items: center;
@@ -1440,51 +1430,54 @@ textarea {
   flex-wrap: wrap;
   justify-content: flex-end;
 }
-.modal--form {
-  width: min(650px, 100%);
-  text-align: left;
+.relationship-table {
+  min-width: 700px;
 }
-.modal__form-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 18px;
-  margin-bottom: 22px;
+.relationship-table td {
+  vertical-align: middle;
 }
-.modal__form-header h2 {
-  margin: 5px 0 6px;
-  font-size: 21px;
+.relationship-row--editing td,
+.relationship-row--editing:hover td {
+  background: #f3f6ff;
+  vertical-align: top;
 }
-.modal__form-header p {
-  margin: 0;
-  color: var(--muted);
-  font-size: 12px;
-  line-height: 1.5;
-}
-.modal__close {
-  flex: 0 0 auto;
-  display: grid;
-  place-items: center;
-  width: 34px;
-  height: 34px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
+.relationship-inline-input {
+  display: block;
+  width: 100%;
+  min-width: 125px;
+  min-height: 36px;
+  padding: 7px 9px;
+  border-radius: 7px;
+  border: 1px solid #dce2eb;
   background: white;
-  color: #566176;
-  font-size: 22px;
-  line-height: 1;
+  color: #25324a;
+  font: inherit;
 }
-.modal__close:hover {
-  background: #f4f6fa;
+.relationship-inline-input:focus {
+  outline: none;
+  border-color: #6e89e9;
+  box-shadow: 0 0 0 3px rgba(52, 87, 213, 0.09);
 }
-.relationship-modal-form {
-  display: grid;
-  gap: 22px;
+.relationship-inline-input--error {
+  border-color: #d25757;
 }
-.modal__actions--end {
+.relationship-inline-error {
+  display: block;
+  margin-top: 5px;
+  font-size: 11px;
+  color: var(--danger);
+  white-space: normal;
+}
+.relationship-inline-actions {
+  display: flex;
+  align-items: center;
   justify-content: flex-end;
+  gap: 7px;
+  flex-wrap: wrap;
 }
-
+.relationship-inline-actions .button {
+  white-space: nowrap;
+}
 @media (max-width: 560px) {
   .relationship-heading-actions {
     width: 100%;
@@ -1492,8 +1485,5 @@ textarea {
   }
   .relationship-heading-actions .button {
     width: 100%;
-  }
-  .modal--form {
-    padding: 20px;
   }
 }

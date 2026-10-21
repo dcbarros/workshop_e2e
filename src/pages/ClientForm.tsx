@@ -9,7 +9,7 @@ import {
 } from "react";
 import { CLIENT_INTERESTS } from "../data/seed";
 import { getClient, lookupCep, saveClient } from "../services/clientService";
-import type { Client, PreferredContact, Relationship } from "../types";
+import type { Client, Relationship } from "../types";
 import { Field } from "../components/Field";
 import { MultiSelectCombobox } from "../components/MultiSelectCombobox";
 import { digitsOnly, formatCpf, notFormatNumeric, formatBirthDate, formatTelephone, formatRg, formatCep, formatCnpj } from "../utils/formatters";
@@ -23,6 +23,7 @@ import {
 import { downloadClientPdf } from "../utils/pdf";
 import { WORKSHOP_FEATURES_BUGS } from "../config/workshopBugsPainel";
 import { SelectField } from "../components/SelectField";
+import { RelationshipInlineEditor } from "../components/RelationshipInlineEditor";
 
 interface ClientFormProps {
   cpf?: string;
@@ -73,7 +74,7 @@ export function ClientForm({ cpf, navigate }: ClientFormProps) {
   const [editingRelationshipId, setEditingRelationshipId] = useState<
     string | null
   >(null);
-  const [relationshipModalOpen, setRelationshipModalOpen] = useState(false);
+  const [relationshipEditorOpen, setRelationshipEditorOpen] = useState(false);
   const [deleteRelationshipId, setDeleteRelationshipId] = useState<
     string | null
   >(null);
@@ -142,6 +143,10 @@ export function ClientForm({ cpf, navigate }: ClientFormProps) {
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
+    if (relationshipEditorOpen) {
+      setNotice("Salve ou cancele a edição do relacionamento antes de salvar o cadastro.");
+      return;
+    }
     const next = validate();
     setErrors(next);
     if (Object.keys(next).length > 0) {
@@ -207,18 +212,23 @@ export function ClientForm({ cpf, navigate }: ClientFormProps) {
     return Object.keys(next).length === 0;
   }
 
-  function closeRelationshipModal() {
-    setRelationshipModalOpen(false);
+  function closeRelationshipEditor() {
+    setRelationshipEditorOpen(false);
     setRelationshipDraft({ id: "", name: "", relation: "", contact: "" });
     setEditingRelationshipId(null);
     setRelationshipErrors({});
   }
 
-  function openNewRelationshipModal() {
+  function addRelationshipInline() {
     setRelationshipDraft({ id: "", name: "", relation: "", contact: "" });
     setEditingRelationshipId(null);
     setRelationshipErrors({});
-    setRelationshipModalOpen(true);
+    setRelationshipEditorOpen(true);
+  }
+
+  function changeRelationshipDraft(field: "name" | "relation" | "contact", value: string) {
+    setRelationshipDraft((current) => ({ ...current, [field]: value }));
+    setRelationshipErrors((current) => ({ ...current, [field]: "" }));
   }
 
   function saveRelationship() {
@@ -235,14 +245,14 @@ export function ClientForm({ cpf, navigate }: ClientFormProps) {
         )
         : [...current.relationships, relationship],
     }));
-    closeRelationshipModal();
+    closeRelationshipEditor();
   }
 
   function editRelationship(item: Relationship) {
     setRelationshipDraft(item);
     setEditingRelationshipId(item.id);
     setRelationshipErrors({});
-    setRelationshipModalOpen(true);
+    setRelationshipEditorOpen(true);
   }
 
   function confirmDeleteRelationship() {
@@ -295,7 +305,7 @@ export function ClientForm({ cpf, navigate }: ClientFormProps) {
     );
 
   return (
-    <div className="page">
+    <div className="page client-form-page">
       <header className="page-header page-header--sticky">
         <div>
           <span className="eyebrow">
@@ -345,7 +355,6 @@ export function ClientForm({ cpf, navigate }: ClientFormProps) {
         <section className="panel form-section">
           <div className="section-heading">
             <div>
-              <span className="section-index">01</span>
               <h2>Dados pessoais</h2>
             </div>
           </div>
@@ -493,7 +502,6 @@ export function ClientForm({ cpf, navigate }: ClientFormProps) {
         <section className="panel form-section">
           <div className="section-heading">
             <div>
-              <span className="section-index">02</span>
               <h2>Endereço</h2>
             </div>
           </div>
@@ -576,7 +584,6 @@ export function ClientForm({ cpf, navigate }: ClientFormProps) {
         <section className="panel form-section">
           <div className="section-heading">
             <div>
-              <span className="section-index">03</span>
               <h2>Dados do cliente</h2>
               <p style={{ display: "none" }}>Classificação comercial e interesses associados.</p>
             </div>
@@ -632,7 +639,6 @@ export function ClientForm({ cpf, navigate }: ClientFormProps) {
         <section className="panel form-section" id="relationship-editor">
           <div className="section-heading section-heading--split">
             <div>
-              <span className="section-index">04</span>
               <h2>Relacionamentos</h2>
               <p style={{ display: "none" }}>Contatos vinculados a este cliente.</p>
             </div>
@@ -643,174 +649,92 @@ export function ClientForm({ cpf, navigate }: ClientFormProps) {
               <button
                 className="button button--secondary"
                 type="button"
-                onClick={openNewRelationshipModal}
-                title="Adiciona um novo contato de relacionamento neste cliente."
+                onClick={addRelationshipInline}
+                disabled={relationshipEditorOpen}
+                title="Adiciona um novo contato diretamente na tabela."
                 data-cy="relationship-add"
               >
                 + Adicionar
               </button>
             </div>
           </div>
-          {client.relationships.length === 0 ? (
+          {client.relationships.length === 0 && !relationshipEditorOpen ? (
             <div className="empty-inline">
               Nenhum relacionamento cadastrado.
             </div>
           ) : (
             <div className="table-scroll">
-              <table className="compact-table">
+              <table className="compact-table relationship-table">
+                <caption className="visually-hidden">Relacionamentos do cliente</caption>
                 <thead>
                   <tr>
-                    <th>Nome</th>
-                    <th>Relação</th>
-                    <th>Contato</th>
-                    <th style={{ textAlign: "right" }}>Ações</th>
+                    <th scope="col">Nome <span className="required">*</span></th>
+                    <th scope="col">Relação</th>
+                    <th scope="col">Contato</th>
+                    <th scope="col" style={{ textAlign: "right" }}>Ações</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {client.relationships.map((item) => (
-                    <tr key={item.id} data-cy="relationship-row">
-                      <td>{item.name}</td>
-                      <td>{item.relation || "—"}</td>
-                      <td>{item.contact}</td>
-                      <td className="actions-cell">
-                        <button
-                          className="icon-button"
-                          type="button"
-                          title="Editar as informações de contato de relacionamento deste cliente."
-                          onClick={() => editRelationship(item)}
-                          data-cy="relationship-edit"
-                        >
-                          ✎
-                        </button>
-                        <button
-                          className="icon-button icon-button--danger"
-                          type="button"
-                          title="Excluir o contato de relacionamento deste cliente."
-                          onClick={() => setDeleteRelationshipId(item.id)}
-                          data-cy="relationship-delete"
-                        >
-                          ⌫
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
+                  {client.relationships.map((item) =>
+                    relationshipEditorOpen && editingRelationshipId === item.id ? (
+                      <RelationshipInlineEditor
+                        key={item.id}
+                        draft={relationshipDraft}
+                        errors={relationshipErrors}
+                        editing
+                        onChange={changeRelationshipDraft}
+                        onSave={saveRelationship}
+                        onCancel={closeRelationshipEditor}
+                      />
+                    ) : (
+                      <tr key={item.id} data-cy="relationship-row">
+                        <td>{item.name}</td>
+                        <td>{item.relation || "—"}</td>
+                        <td>{item.contact}</td>
+                        <td className="actions-cell">
+                          <button
+                            className="icon-button"
+                            type="button"
+                            title="Editar relacionamento nesta linha."
+                            aria-label={`Editar relacionamento de ${item.name}`}
+                            disabled={relationshipEditorOpen}
+                            onClick={() => editRelationship(item)}
+                            data-cy="relationship-edit"
+                          >
+                            ✎
+                          </button>
+                          <button
+                            className="icon-button icon-button--danger"
+                            type="button"
+                            title="Excluir o contato de relacionamento deste cliente."
+                            aria-label={`Excluir relacionamento de ${item.name}`}
+                            disabled={relationshipEditorOpen}
+                            onClick={() => setDeleteRelationshipId(item.id)}
+                            data-cy="relationship-delete"
+                          >
+                            ⌫
+                          </button>
+                        </td>
+                      </tr>
+                    ),
+                  )}
+                  {relationshipEditorOpen && editingRelationshipId === null ? (
+                    <RelationshipInlineEditor
+                      key="new-relationship"
+                      draft={relationshipDraft}
+                      errors={relationshipErrors}
+                      editing={false}
+                      onChange={changeRelationshipDraft}
+                      onSave={saveRelationship}
+                      onCancel={closeRelationshipEditor}
+                    />
+                  ) : null}
                 </tbody>
               </table>
             </div>
           )}
         </section>
       </form>
-
-      {relationshipModalOpen ? (
-        <div
-          className="modal-backdrop"
-          role="presentation"
-          data-cy="relationship-modal"
-        >
-          <div
-            className="modal modal--form"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="relationship-modal-title"
-          >
-            <div className="modal__form-header">
-              <div>
-                <span className="eyebrow">Relacionamento</span>
-                <h2 id="relationship-modal-title">
-                  {editingRelationshipId
-                    ? "Editar relacionamento"
-                    : "Adicionar relacionamento"}
-                </h2>
-                <p>Informe os dados do contato vinculado a este cliente.</p>
-              </div>
-              <button
-                className="modal__close"
-                type="button"
-                onClick={closeRelationshipModal}
-                aria-label="Fechar modal"
-                data-cy="relationship-modal-close"
-              >
-                ×
-              </button>
-            </div>
-            <form
-              className="relationship-modal-form"
-              onSubmit={(event) => {
-                event.preventDefault();
-                saveRelationship();
-              }}
-              noValidate
-            >
-              <div className="form-grid form-grid--2">
-                <Field
-                  label="Nome"
-                  required
-                  value={relationshipDraft.name}
-                  onChange={(e) =>
-                    setRelationshipDraft((current) => ({
-                      ...current,
-                      name: e.target.value,
-                    }))
-                  }
-                  error={relationshipErrors.name}
-                  placeholder="Nome completo"
-                  maxLength={50}
-                  id="relationship-name"
-                  data-cy="relationship-name"
-                  className="span-2"
-                />
-                <Field
-                  label="Relação"
-                  value={relationshipDraft.relation}
-                  onChange={(e) =>
-                    setRelationshipDraft((current) => ({
-                      ...current,
-                      relation: e.target.value,
-                    }))
-                  }
-                  placeholder="Ex.: Cônjuge"
-                  maxLength={30}
-                  id="relationship-relation"
-                  data-cy="relationship-relation"
-                />
-                <Field
-                  label="Contato"
-                  required
-                  value={relationshipDraft.contact}
-                  onChange={(e) =>
-                    setRelationshipDraft((current) => ({
-                      ...current,
-                      contact: e.target.value,
-                    }))
-                  }
-                  error={relationshipErrors.contact}
-                  placeholder="Telefone, e-mail…"
-                  maxLength={30}
-                  id="relationship-contact"
-                  data-cy="relationship-contact"
-                />
-              </div>
-              <div className="modal__actions modal__actions--end">
-                <button
-                  className="button button--ghost"
-                  type="button"
-                  onClick={closeRelationshipModal}
-                  data-cy="relationship-cancel"
-                >
-                  Cancelar
-                </button>
-                <button
-                  className="button button--primary"
-                  type="submit"
-                  data-cy="relationship-save"
-                >
-                  {editingRelationshipId ? "Salvar edição" : "Adicionar"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      ) : null}
 
       {deleteRelationshipId ? (
         <div className="modal-backdrop" role="presentation">
